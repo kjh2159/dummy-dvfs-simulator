@@ -11,3 +11,10 @@ add_executable(dummy_test dummy_test.cpp)
 #     target_link_libraries(ver1 PRIVATE project_core)
 #     target_link_libraries(ver2 PRIVATE project_core)
 # endif()
+
+
+# limit optimization for cpu_burner
+# (to prevent too long compilation time)
+target_compile_options(cpu_burner PRIVATE
+  $<$<CONFIG:Release>:-O0 -fno-unroll-loops -fno-lto>
+)
