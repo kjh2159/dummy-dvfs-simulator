@@ -10,7 +10,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_library(project_headers INTERFACE)
 target_include_directories(project_headers
     INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/
 )
 
 # 2) src for static library with .cpp (if any)
@@ -21,4 +21,4 @@ if(SRC_SOURCES)
 endif()
 
 # enter simulator subdirectory
-add_subdirectory(simulator)
+add_subdirectory(simulators)
