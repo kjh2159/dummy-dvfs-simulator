@@ -9,6 +9,14 @@ This Dummy DVFS Simulator has two functionalities:
 In the case of the CPU burner, it can lead to full utilization of the selected cores within a specified duration.
 However, in the case of the LLM-mimicry simulator can lead to high CPU and RAM utilization.
 
+## 🎮 Compatibility
+
+|Backend|Runnable|
+|-------|--------|
+|Windows|❌|
+|Linux (amd64/ARM)|✅|
+|MacOS (ARM)|✅|
+
 
 ## 🚀 Quick Start
 
