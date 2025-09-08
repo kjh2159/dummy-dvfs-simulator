@@ -16,11 +16,19 @@
 #include <thread>
 #include <vector>
 #include <algorithm>
+#include <cctype>
 
 #include <unistd.h>
-#include <sys/syscall.h>
-#include <sys/resource.h>
-#include <sched.h>
+// 기존 리눅스 헤더는 조건부로
+#if defined(__linux__) || defined(__ANDROID__)
+  #include <sys/syscall.h>
+  #include <sched.h>
+  #include <sys/resource.h>
+#elif defined(__APPLE__)
+  // macOS: 선택사항 — Mach affinity tag 사용
+  #include <mach/mach.h>
+  #include <mach/thread_policy.h>
+#endif
 
 // #include "hardware/dvfs.h"
 // #include "hardware/record.h"
@@ -70,16 +78,34 @@ static std::vector<int> read_online_cpus() {
 
 // 현재 스레드를 특정 코어에 고정
 static bool pin_to_core(int core_id) {
+#if defined(__linux__) || defined(__ANDROID__)
     cpu_set_t set;
     CPU_ZERO(&set);
     CPU_SET(core_id, &set);
-
-    // 스레드 TID 확보
+     // 스레드 TID 확보
     pid_t tid = static_cast<pid_t>(syscall(SYS_gettid));
     if (sched_setaffinity(tid, sizeof(set), &set) != 0) {
         return false;
     }
     return true;
+
+#elif defined(__APPLE__)
+    // macOS에는 코어 “고정” API가 없음.
+    // 대신 affinity tag로 스케줄러 힌트를 줄 수는 있음(동일 tag끼리 가까이 배치하려는 정도).
+    // 주의: 특정 코어에 박는 것이 아님. 필요 없으면 그냥 `return true;` 로 두세요.
+    thread_affinity_policy_data_t policy = { (integer_t)((core_id % 16) + 1) };
+    kern_return_t kr = thread_policy_set(
+        mach_thread_self(),
+        THREAD_AFFINITY_POLICY,
+        (thread_policy_t)&policy,
+        THREAD_AFFINITY_POLICY_COUNT
+    );
+    return kr == KERN_SUCCESS;
+
+#else
+    (void)core_id;
+    return true; // 기타 OS: no-op
+#endif
 }
 
 // nice 값을 올려 스케줄 우선순위를 높임 (루트 아닐 때는 실패할 수 있음)

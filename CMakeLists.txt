@@ -12,6 +12,10 @@ target_include_directories(project_headers
     INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/
 )
+target_include_directories(project_headers
+    INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/
+)
 
 # 2) src for static library with .cpp (if any)
 file(GLOB SRC_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
