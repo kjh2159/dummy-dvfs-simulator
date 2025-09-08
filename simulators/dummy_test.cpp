@@ -15,9 +15,9 @@
 #include <windows.h>
 #endif
 
-// #include "cmdline.h"                    // for command line parsing
-// #include "hardware/record4perfetto.hpp" // for hardware recording (reuse)
-// #include "hardware/dvfs.h"              // for DVFS control (reuse)
+#include "cmdline.h"                    // for command line parsing
+#include "hardware/dvfs.h"              // for DVFS control (reuse)
+#include "hardware/record.h" // for hardware recording (reuse)
 
 // type aliases for clarity
 using Vector = std::vector<float>;

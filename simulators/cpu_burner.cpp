@@ -30,8 +30,9 @@
   #include <mach/thread_policy.h>
 #endif
 
-// #include "hardware/dvfs.h"
-// #include "hardware/record.h"
+#include "cmdline.h"
+#include "hardware/dvfs.h"
+#include "hardware/record.h"
 
 using namespace std::chrono;
 
