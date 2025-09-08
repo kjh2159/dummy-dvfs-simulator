@@ -31,6 +31,7 @@
 #endif
 
 #include "cmdline.h"
+#include "utils/util.hpp"
 #include "hardware/dvfs.h"
 #include "hardware/record.h"
 
@@ -149,19 +150,45 @@ static void hot_loop(std::atomic<bool>& stop_flag, std::atomic<bool>& work_flag)
 }
 
 int main(int argc, char** argv) {
+    std::ios::sync_with_stdio(false);
     std::signal(SIGINT, on_sigint);
 
-    // 기본값: 온라인 코어 전부 사용, 코어 고정 활성, 무제한 실행
-    bool pin = true;
-    int threads = -1; // -1이면 온라인 코어 수
-    int duration_sec = -1;
-    const std::string device_name = "Pixel9"; // fixed for testing
-    const int cpu_clk_idx = 12;
-    const int ram_clk_idx = 11;
-    const int pause_sec = 10;
-    const int compute_burst_sec = 40;
-    std::string output_hard = std::string("dummy/kernel_hard_") + std::to_string(cpu_clk_idx) + std::string("_") + std::to_string(ram_clk_idx) + std::string(".txt");
+    /* option parsing */
+    cmdline::parser cmdParser;
+    cmdParser.add("help", 'h', "print this help message");
+    cmdParser.add("nopin", 0, "do NOT pin threads to specific cores");
+    cmdParser.add<int>("threads", 't', "number of threads (default: # of online CPUs)", false, -1);
+    cmdParser.add<int>("duration", 'd', "duration time in seconds (default: 10s)", false, 10);
+    cmdParser.add<int>("burst", 'b', "computation burst time in seconds (default: 5s)", false, 5);
+    cmdParser.add<int>("pause", 'p', "pause (idle) time in seconds (default: 5s)", false, 5);
+    cmdParser.add<std::string>("device", 0, "specify phone type [Pixel9 | S24] (default: Pixel9)", false, "Pixel9");
+    cmdParser.add<std::string>("output", 'o', "specify output directory path (default: output/)", false, "output/");
+    // dvfs options
+    cmdParser.add<int>("cpu-clock", 'c', "CPU clock index for DVFS (default: -1 [off])", false, -1);
+    cmdParser.add<int>("ram-clock", 'r', "CPU clock index for DVFS (default: -1 [off])", false, -1);
+    cmdParser.parse_check(argc, argv);
+    
+    // get options
+    bool pin = cmdParser.exist("nopin") ? false : true;
+    int threads = cmdParser.get<int>("threads"); // -1 -> all online cores
+    int duration_sec = cmdParser.get<int>("duration") > 0 ? cmdParser.get<int>("duration") : 0; 
+    const int compute_burst_sec = cmdParser.get<int>("burst") > 0 ? cmdParser.get<int>("burst") : 0;
+    const int pause_sec = cmdParser.get<int>("pause") > 0 ? cmdParser.get<int>("pause") : 0;
+    const std::string device_name = cmdParser.get<std::string>("device");
+    const std::string output_dir = cmdParser.get<std::string>("output");
+    // dvfs options
+    const int cpu_clk_idx = cmdParser.get<int>("cpu-clock");
+    const int ram_clk_idx = cmdParser.get<int>("ram-clock");
+    
 
+    // TODO: kernel hard recording path refinement
+    // output file join
+    std::string output_hard = joinPaths(
+        output_dir, 
+        std::string("kernel_hard") + std::to_string(cpu_clk_idx) + "_" + std::to_string(ram_clk_idx) + std::string(".txt")
+    );
+
+    // option validation
     for (int i = 1; i < argc; ++i) {
         std::string a = argv[i];
         if (a == "-t" && i+1 < argc) {

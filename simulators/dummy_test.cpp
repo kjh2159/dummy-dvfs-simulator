@@ -16,6 +16,7 @@
 #endif
 
 #include "cmdline.h"                    // for command line parsing
+#include "utils/util.hpp"              // for file and path utilities
 #include "hardware/dvfs.h"              // for DVFS control (reuse)
 #include "hardware/record.h" // for hardware recording (reuse)
 
@@ -193,48 +194,43 @@ int main(int argc, char **argv) {
     SetConsoleOutputCP(CP_UTF8);
 #endif
     std::iostream::sync_with_stdio(false);
-    // cmdline::parser cmdParser;
+    cmdline::parser cmdParser;
 
     // TODO: adjust hidden_dim and ffn_size value
     // arg parser
-    // cmdParser.add<std::string>("model", 'm', "a filename of dummy model", false, "dummy_model_weights.bin");
-    // cmdParser.add<int>("num_queries", 'q', "the number of inference", false, 10);
-    // cmdParser.add<int>("num_layers", 'l', "the number of layers", false, 24);
-    // cmdParser.add<int>("hidden_dim", 'h', "hidden dimension", false, 256); // lowered by fp16 memory issue
-    // cmdParser.add<int>("ffn_size", 'f', "hidden dimension", false, 588);   // lowered by fp16 memory issue
-    // cmdParser.add<int>("input_tokens", 'i', "input length (alias: prompt tokens)", false, 64);
-    // cmdParser.add<int>("output_tokens", 'o', "output length (alias: generation tokens)", false, 256);
-    // cmdParser.add<int>("num_threads", 't', "number of threads", false, 4);
-    // cmdParser.add<int>("cpu_clock", 'c', "number of threads", true, 12);
-    // cmdParser.add<int>("ram_clock", 'r', "number of threads", true, 11);
-    // cmdParser.add<std::string>("kernel_file", 'k', "kernel recorded file name", true, "kernel_hard.txt");
-    // cmdParser.parse_check(argc, argv);
+    cmdParser.add<std::string>("model", 'm', "a filename of dummy model", false, "dummy_model_weights.bin");
+    cmdParser.add<int>("num-layers", 'l', "the number of layers", false, 24);
+    cmdParser.add<int>("num-queries", 'q', "the number of inference", false, 10);
+    cmdParser.add<int>("hidden-dim", 'h', "hidden dimension", false, 256); // lowered by fp16 memory issue
+    cmdParser.add<int>("ffn-size", 'f', "hidden dimension", false, 588);   // lowered by fp16 memory issue
+    cmdParser.add<int>("input-tokens", 'i', "input length (alias: prompt tokens)", false, 64);
+    cmdParser.add<int>("output-tokens", 'o', "output length (alias: generation tokens)", false, 256);
+    cmdParser.add<int>("num-threads", 't', "number of threads", false, 4);
+    cmdParser.add<int>("cpu-clock", 'c', "number of threads", true, 12);
+    cmdParser.add<int>("ram-clock", 'r', "number of threads", true, 11);
+    cmdParser.add<std::string>("output", 'o', "specify output directory path (default: output/)", false, "output/");
+    cmdParser.parse_check(argc, argv);
 
     // model hyperparameters
-    const std::string dummy_filename = "model_weights.bin";
-    int num_layers = 24;
-    int num_queries = 20;
-    int hidden_dim = 2024;
-    int ffn_dim = 6144;
-    int seq_len = 64;
-    int generated_tokens = 256;
-    const int num_threads = 4;
-    const int cpu_clk_idx = 12;
-    const int ram_clk_idx = 11;
-    const std::string kernel_file = "kernel_file_" + std::to_string(cpu_clk_idx) + "_" + std::to_string(ram_clk_idx) + ".txt";
+    const std::string dummy_filename = cmdParser.get<std::string>("model");
+    int num_layers = cmdParser.get<int>("num-layers");
+    int num_queries = cmdParser.get<int>("num-queries");
+    int hidden_dim = cmdParser.get<int>("hidden-dim");
+    int ffn_dim = cmdParser.get<int>("ffn-size");
+    int seq_len = cmdParser.get<int>("input-tokens");
+    int generated_tokens = cmdParser.get<int>("output-tokens");
+    const int num_threads = cmdParser.get<int>("num-threads");
+    const int cpu_clk_idx = cmdParser.get<int>("cpu-clock");
+    const int ram_clk_idx = cmdParser.get<int>("ram-clock");
+    const std::string output_dir = cmdParser.get<std::string>("output");
     const std::string device_name = "Pixel9"; // fixed for testing
-    // const std::string dummy_filename = cmdParser.get<std::string>("model");
-    // int num_layers = cmdParser.get<int>("num_layers");
-    // int num_queries = cmdParser.get<int>("num_queries");
-    // int hidden_dim = cmdParser.get<int>("hidden_dim");
-    // int ffn_dim = cmdParser.get<int>("ffn_size");
-    // int seq_len = cmdParser.get<int>("input_tokens");
-    // int generated_tokens = cmdParser.get<int>("output_tokens");
-    // const int num_threads = cmdParser.get<int>("num_threads");
-    // const int cpu_clk_idx = cmdParser.get<int>("cpu_clock");
-    // const int ram_clk_idx = cmdParser.get<int>("ram_clock");
-    // const std::string kernel_file = cmdParser.get<std::string>("kernel_file");
-    // const std::string device_name = "Pixel9"; // fixed for testing
+
+    // TODO: kernel hard recording path refinement
+    // output file join
+    std::string output_hard = joinPaths(
+        output_dir, 
+        std::string("kernel_hard") + std::to_string(cpu_clk_idx) + "_" + std::to_string(ram_clk_idx) + std::string(".txt")
+    );
 
     // // DVFS setting
     // DVFS dvfs(device_name);
@@ -248,7 +244,7 @@ int main(int argc, char **argv) {
 
     // // start recording
     // std::thread record_thread = std::thread(record_hard_perf,
-    //                                         std::ref(sigterm), kernel_file, device_name);
+    //                                         std::ref(sigterm), output_hard, device_name);
 
     // main procedure
     try {

@@ -16,13 +16,14 @@ However, in the case of the LLM-mimicry simulator can lead to high CPU and RAM u
 |Windows|❌|
 |Linux (amd64/ARM)|✅|
 |MacOS (ARM)|✅|
+|Android (ARM)|✅|
 
 
 ## 🚀 Quick Start
 
 ### STEP 1: build
 ```shell
-mkdir -p build
+mkdir -p build output
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
 ```
