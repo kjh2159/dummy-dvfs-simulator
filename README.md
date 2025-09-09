@@ -21,14 +21,20 @@ However, in the case of the LLM-mimicry simulator can lead to high CPU and RAM u
 
 ## 🚀 Quick Start
 
-### STEP 1: build
+### STEP 1: clone
+```shell
+git clone https://github.com/kjh2159/dummy-dvfs-sumulator.git dds
+cd dds
+```
+
+### STEP 2: build
 ```shell
 mkdir -p build output
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
 ```
 
-### STEP 2: run
+### STEP 3: run
 ```shell
 ./build/simulators/cpu_burner -d 300 -t 5 
 ```
