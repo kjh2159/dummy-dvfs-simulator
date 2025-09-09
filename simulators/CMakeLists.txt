@@ -3,7 +3,7 @@ add_executable(cpu_burner cpu_burner.cpp)
 add_executable(dummy_test dummy_test.cpp)
 add_executable(thermo_jolt thermo_jolt.cpp)
 
-# src 헤더 include 경로 주입
+# src header include path injection
 target_link_libraries(cpu_burner PRIVATE project_headers)
 target_link_libraries(dummy_test PRIVATE project_headers)
 target_link_libraries(thermo_jolt PRIVATE project_headers)

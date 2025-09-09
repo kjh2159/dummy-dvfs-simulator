@@ -24,5 +24,14 @@ if(SRC_SOURCES)
     target_include_directories(project_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 endif()
 
-# enter simulator subdirectory
+# 3) enter simulator subdirectory
 add_subdirectory(simulators)
+
+# 4) tests: Debug only
+if(NOT CMAKE_CONFIGURATION_TYPES) # single-config (Makefiles/Ninja)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_subdirectory(test)
+    endif()
+else()
+    add_subdirectory(test)
+endif()
