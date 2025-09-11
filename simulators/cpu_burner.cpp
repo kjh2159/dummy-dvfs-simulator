@@ -292,10 +292,10 @@ int main(int argc, char** argv) {
     std::cout << "cpu_burner: done.\n";
 
     sigterm = true;
-    // dvfs.unset_cpu_freq();
-    // dvfs.unset_ram_freq();
+    dvfs.unset_cpu_freq();
+    dvfs.unset_ram_freq();
     if (phase_thread.joinable()) phase_thread.join();
-    // record_thread.join();
+    record_thread.join();
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     return 0;
