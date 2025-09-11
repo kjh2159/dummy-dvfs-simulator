@@ -234,6 +234,7 @@ int main(int argc, char **argv) {
 
     // DVFS setting
     DVFS dvfs(device_name);
+    dvfs.output_filename = output_hard;
     // cpu clock candidates
     std::vector<int> freq_config = dvfs.get_cpu_freqs_conf(cpu_clk_idx);
     for (auto f : freq_config) { std::cout << f << " "; } std::cout << std::endl; // to validate (print freq-configuration)
@@ -244,7 +245,7 @@ int main(int argc, char **argv) {
     std::thread record_thread = std::thread(record_hard, std::ref(sigterm), dvfs);
 
     // stabilize
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // main procedure
     try {

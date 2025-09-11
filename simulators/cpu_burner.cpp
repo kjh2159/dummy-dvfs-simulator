@@ -234,6 +234,7 @@ int main(int argc, char** argv) {
 
     // DVFS setting
     DVFS dvfs(device_name);
+    dvfs.output_filename = output_hard;
     // cpu clock candidates
     std::vector<int> freq_config = dvfs.get_cpu_freqs_conf(cpu_clk_idx);
     for (auto f : freq_config) { std::cout << f << " "; } std::cout << std::endl; // to validate (print freq-configuration)
@@ -244,7 +245,7 @@ int main(int argc, char** argv) {
     std::thread record_thread = std::thread(record_hard, std::ref(sigterm), dvfs);
 
     // stabilize
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     std::thread phase_thread([&]{
         using namespace std::chrono_literals;
@@ -253,7 +254,7 @@ int main(int argc, char** argv) {
 
             // 연산 구간
             g_work.store(true, std::memory_order_relaxed);
-            std::cout << "[BURST] " << compute_burst_sec << "s" << std::flush << std::endl;
+            std::cout << "[BURST] " << compute_burst_sec << "s" << std::endl;
             for (int s = 0; s < compute_burst_sec &&
                  !g_stop.load(std::memory_order_relaxed) &&
                  !stop.load(std::memory_order_relaxed); ++s) {
@@ -262,7 +263,7 @@ int main(int argc, char** argv) {
 
             // 휴식 구간
             g_work.store(false, std::memory_order_relaxed);
-            std::cout << "[PAUSE] " << pause_sec << "s" << std::flush << std::endl;
+            std::cout << "[PAUSE] " << pause_sec << "s" << std::endl;
             for (int s = 0; s < pause_sec &&
                  !g_stop.load(std::memory_order_relaxed) &&
                  !stop.load(std::memory_order_relaxed); ++s) {
