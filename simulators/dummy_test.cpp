@@ -232,19 +232,19 @@ int main(int argc, char **argv) {
         std::string("kernel_hard") + std::to_string(cpu_clk_idx) + "_" + std::to_string(ram_clk_idx) + std::string(".txt")
     );
 
-    // // DVFS setting
-    // DVFS dvfs(device_name);
-    // // cpu clock candidates
-    // std::vector<int> freq_config = dvfs.get_cpu_freqs_conf(cpu_clk_idx);
-    // for (auto f : freq_config) { std::cout << f << " "; }
-    // std::cout << std::endl; // to validate (print freq-configuration)
-    // // dvfs setting
-    // dvfs.set_cpu_freq(freq_config);
-    // dvfs.set_ram_freq(ram_clk_idx);
+    // DVFS setting
+    DVFS dvfs(device_name);
+    // cpu clock candidates
+    std::vector<int> freq_config = dvfs.get_cpu_freqs_conf(cpu_clk_idx);
+    for (auto f : freq_config) { std::cout << f << " "; } std::cout << std::endl; // to validate (print freq-configuration)
+    // dvfs setting
+    dvfs.set_cpu_freq(freq_config);
+    dvfs.set_ram_freq(ram_clk_idx);
+    // start recording
+    std::thread record_thread = std::thread(record_hard, std::ref(sigterm), dvfs);
 
-    // // start recording
-    // std::thread record_thread = std::thread(record_hard_perf,
-    //                                         std::ref(sigterm), output_hard, device_name);
+    // stabilize
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     // main procedure
     try {

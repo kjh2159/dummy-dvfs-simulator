@@ -234,16 +234,17 @@ int main(int argc, char** argv) {
 
     // DVFS setting
     DVFS dvfs(device_name);
+    // cpu clock candidates
     std::vector<int> freq_config = dvfs.get_cpu_freqs_conf(cpu_clk_idx);
-    dvfs.output_filename = output_hard; // dvfs.output_filename requires hardware recording output path
-    for (auto f :freq_config) { std::cout << f << " "; } std::cout << std::endl; // to validate (print freq-configuration)
-    
+    for (auto f : freq_config) { std::cout << f << " "; } std::cout << std::endl; // to validate (print freq-configuration)
+    // dvfs setting
     dvfs.set_cpu_freq(freq_config);
     dvfs.set_ram_freq(ram_clk_idx);
+    // start recording
     std::thread record_thread = std::thread(record_hard, std::ref(sigterm), dvfs);
 
     // stabilize
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     std::thread phase_thread([&]{
         using namespace std::chrono_literals;
