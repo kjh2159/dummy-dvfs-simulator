@@ -1,18 +1,24 @@
-# simulator: into executables
-add_executable(cpu_burner cpu_burner.cpp)
-add_executable(dummy_test dummy_test.cpp)
-add_executable(thermo_jolt thermo_jolt.cpp)
+# simulator/CMakeLists.txt
 
-# src header include path injection
-target_link_libraries(cpu_burner PRIVATE project_headers)
-target_link_libraries(dummy_test PRIVATE project_headers)
-target_link_libraries(thermo_jolt PRIVATE project_headers)
+# helper function to make simulator executables
+function(make_sim exe_name)
+    add_executable(${exe_name} ${exe_name}.cpp)
 
-# src에 .cpp가 있어 project_core를 만들었다면 링크 – 주석 해제해서 사용
-# if(TARGET project_core)
-#     target_link_libraries(ver1 PRIVATE project_core)
-#     target_link_libraries(ver2 PRIVATE project_core)
-# endif()
+    # header directories
+    target_link_libraries(${exe_name} PRIVATE project_headers)
+
+    # link to core libraries written in src/*.cpp
+    if(TARGET project_core)
+        target_link_libraries(${exe_name} PRIVATE project_core)
+    endif()
+
+    target_compile_features(${exe_name} PRIVATE cxx_std_17)
+endfunction()
+
+# make simulator executables
+make_sim(cpu_burner)
+make_sim(dummy_test)
+make_sim(thermo_jolt)
 
 
 # limit optimization for cpu_burner
