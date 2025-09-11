@@ -36,5 +36,5 @@ cmake --build build -j
 
 ### STEP 3: run
 ```shell
-./build/simulators/cpu_burner -d 300 -t 5 
+./build/bin/cpu_burner -d 300 -t 5 
 ```
