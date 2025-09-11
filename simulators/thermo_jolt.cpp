@@ -218,18 +218,19 @@ int main(int argc, char** argv) {
     ths.reserve(threads);
 
     // DVFS setting
-    // DVFS dvfs(device_name);
-    // std::vector<int> freq_config = dvfs.get_cpu_freqs_conf(cpu_clk_idx);
-    // dvfs.output_filename = output_hard; // dvfs.output_filename requires hardware recording output path
-    // for (auto f :freq_config) { std::cout << f << " "; } std::cout << std::endl; // to validate (print freq-configuration)
+    DVFS dvfs(device_name);
+    // cpu clock candidates
+    std::vector<int> freq_config = dvfs.get_cpu_freqs_conf(cpu_clk_idx);
+    for (auto f : freq_config) { std::cout << f << " "; } std::cout << std::endl; // to validate (print freq-configuration)
+    // dvfs setting
+    dvfs.set_cpu_freq(freq_config);
+    dvfs.set_ram_freq(ram_clk_idx);
+    // start recording
+    std::thread record_thread = std::thread(record_hard, std::ref(sigterm), dvfs);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     
-    // dvfs.set_cpu_freq(freq_config);
-    // dvfs.set_ram_freq(ram_clk_idx);
-    // std::thread record_thread = std::thread(record_hard, std::ref(sigterm), dvfs);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     std::cout << "=== start ===\n";
-
     std::thread phase_thread([&]{
         using namespace std::chrono_literals;
         while (!g_stop.load(std::memory_order_relaxed) &&
@@ -276,11 +277,12 @@ int main(int argc, char** argv) {
 
     std::cout << "thermo_jolt: done.\n";
 
+    // done
     sigterm = true;
-    // dvfs.unset_cpu_freq();
-    // dvfs.unset_ram_freq();
+    dvfs.unset_cpu_freq();
+    dvfs.unset_ram_freq();
     if (phase_thread.joinable()) phase_thread.join();
-    // record_thread.join();
+    record_thread.join();
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     return 0;
