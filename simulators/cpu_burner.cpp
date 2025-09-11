@@ -233,15 +233,16 @@ int main(int argc, char** argv) {
     ths.reserve(threads);
 
     // DVFS setting
-    // DVFS dvfs(device_name);
-    // std::vector<int> freq_config = dvfs.get_cpu_freqs_conf(cpu_clk_idx);
-    // dvfs.output_filename = output_hard; // dvfs.output_filename requires hardware recording output path
-    // for (auto f :freq_config) { std::cout << f << " "; } std::cout << std::endl; // to validate (print freq-configuration)
+    DVFS dvfs(device_name);
+    std::vector<int> freq_config = dvfs.get_cpu_freqs_conf(cpu_clk_idx);
+    dvfs.output_filename = output_hard; // dvfs.output_filename requires hardware recording output path
+    for (auto f :freq_config) { std::cout << f << " "; } std::cout << std::endl; // to validate (print freq-configuration)
     
-    // dvfs.set_cpu_freq(freq_config);
-    // dvfs.set_ram_freq(ram_clk_idx);
-    // std::thread record_thread = std::thread(record_hard, std::ref(sigterm), dvfs);
+    dvfs.set_cpu_freq(freq_config);
+    dvfs.set_ram_freq(ram_clk_idx);
+    std::thread record_thread = std::thread(record_hard, std::ref(sigterm), dvfs);
 
+    // stabilize
     std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
     std::thread phase_thread([&]{
@@ -251,7 +252,7 @@ int main(int argc, char** argv) {
 
             // 연산 구간
             g_work.store(true, std::memory_order_relaxed);
-            std::cout << "[phase] compute " << compute_burst_sec << "s\n";
+            std::cout << "[BURST] " << compute_burst_sec << "s" << std::flush << std::endl;
             for (int s = 0; s < compute_burst_sec &&
                  !g_stop.load(std::memory_order_relaxed) &&
                  !stop.load(std::memory_order_relaxed); ++s) {
@@ -260,7 +261,7 @@ int main(int argc, char** argv) {
 
             // 휴식 구간
             g_work.store(false, std::memory_order_relaxed);
-            std::cout << "[phase] idle " << pause_sec << "s\n";
+            std::cout << "[PAUSE] " << pause_sec << "s" << std::flush << std::endl;
             for (int s = 0; s < pause_sec &&
                  !g_stop.load(std::memory_order_relaxed) &&
                  !stop.load(std::memory_order_relaxed); ++s) {
