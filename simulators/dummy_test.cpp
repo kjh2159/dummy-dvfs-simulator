@@ -329,13 +329,13 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    // simulation done
-    sigterm = true;
-    // dvfs.unset_cpu_freq();
-    // dvfs.unset_ram_freq();
-    // record_thread.join();
+    std::cout << "dummy_test: done.\n";
 
-    std::cout << "DONE\n";
+    // done
+    sigterm = true;
+    dvfs.unset_cpu_freq();
+    dvfs.unset_ram_freq();
+    record_thread.join();
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     return 0;

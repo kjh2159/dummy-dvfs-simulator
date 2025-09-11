@@ -292,6 +292,7 @@ int main(int argc, char** argv) {
 
     std::cout << "cpu_burner: done.\n";
 
+    // done
     sigterm = true;
     dvfs.unset_cpu_freq();
     dvfs.unset_ram_freq();
