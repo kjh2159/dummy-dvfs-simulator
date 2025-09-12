@@ -237,18 +237,19 @@ int main(int argc, char** argv) {
         while (!g_stop.load(std::memory_order_relaxed) &&
                !stop.load(std::memory_order_relaxed)) {
 
-            // 연산 구간
+            // total duration: duration_sec + pulse_sec
+            // warm-up phase (duration_sec)
             g_work.store(true, std::memory_order_relaxed);
-            std::cout << "[phase] warm-up " << duration_sec << "s\n";
+            std::cout << "[WARM-UP] " << duration_sec << "s\n";
             for (int s = 0; s < duration_sec &&
                  !g_stop.load(std::memory_order_relaxed) &&
                  !stop.load(std::memory_order_relaxed); ++s) {
                 std::this_thread::sleep_for(1s);
             }
 
-            // 휴식 구간
+            // pulse phase (pulse_sec)
             g_work.store(false, std::memory_order_relaxed);
-            std::cout << "[phase] pulse " << pulse_sec << "s\n";
+            std::cout << "[PULSE] " << pulse_sec << "s\n";
             for (int s = 0; s < pulse_sec &&
                  !g_stop.load(std::memory_order_relaxed) &&
                  !stop.load(std::memory_order_relaxed); ++s) {

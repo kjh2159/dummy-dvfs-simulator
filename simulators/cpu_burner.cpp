@@ -254,7 +254,7 @@ int main(int argc, char** argv) {
 
             // 연산 구간
             g_work.store(true, std::memory_order_relaxed);
-            std::cout << "[BURST] " << compute_burst_sec << "s" << std::endl;
+            std::cout << "[BURST] " << compute_burst_sec << "s\n";
             for (int s = 0; s < compute_burst_sec &&
                  !g_stop.load(std::memory_order_relaxed) &&
                  !stop.load(std::memory_order_relaxed); ++s) {
@@ -263,7 +263,7 @@ int main(int argc, char** argv) {
 
             // 휴식 구간
             g_work.store(false, std::memory_order_relaxed);
-            std::cout << "[PAUSE] " << pause_sec << "s" << std::endl;
+            std::cout << "[PAUSE] " << pause_sec << "s\n";
             for (int s = 0; s < pause_sec &&
                  !g_stop.load(std::memory_order_relaxed) &&
                  !stop.load(std::memory_order_relaxed); ++s) {
