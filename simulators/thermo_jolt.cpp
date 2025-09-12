@@ -18,13 +18,14 @@
 #include <cctype>
 
 #include <unistd.h>
-// 기존 리눅스 헤더는 조건부로
+
 #if defined(__linux__) || defined(__ANDROID__)
+// linux header
   #include <sys/syscall.h>
   #include <sched.h>
   #include <sys/resource.h>
 #elif defined(__APPLE__)
-  // macOS: 선택사항 — Mach affinity tag 사용
+// macOS: Mach affinity tag
   #include <mach/mach.h>
   #include <mach/thread_policy.h>
 #endif
@@ -44,7 +45,7 @@ static void on_sigint(int) {
     g_stop.store(true, std::memory_order_relaxed);
 }
 
-// /sys/devices/system/cpu/online 을 파싱해서 사용 가능한 CPU ID 목록 반환 (예: "0-7,10-11")
+// /sys/devices/system/cpu/online parsing
 static std::vector<int> read_online_cpus() {
     std::ifstream f("/sys/devices/system/cpu/online");
     std::string s;
@@ -77,13 +78,13 @@ static std::vector<int> read_online_cpus() {
     return cpus;
 }
 
-// 현재 스레드를 특정 코어에 고정
+// affine thread to specific core
 static bool pin_to_core(int core_id) {
 #if defined(__linux__) || defined(__ANDROID__)
     cpu_set_t set;
     CPU_ZERO(&set);
     CPU_SET(core_id, &set);
-     // 스레드 TID 확보
+     // Thread TID get
     pid_t tid = static_cast<pid_t>(syscall(SYS_gettid));
     if (sched_setaffinity(tid, sizeof(set), &set) != 0) {
         return false;
@@ -91,9 +92,9 @@ static bool pin_to_core(int core_id) {
     return true;
 
 #elif defined(__APPLE__)
-    // macOS에는 코어 “고정” API가 없음.
-    // 대신 affinity tag로 스케줄러 힌트를 줄 수는 있음(동일 tag끼리 가까이 배치하려는 정도).
-    // 주의: 특정 코어에 박는 것이 아님. 필요 없으면 그냥 `return true;` 로 두세요.
+    // macOS has no core "pin" API.
+    // instead, can give scheduler hint by affinity tag (try to put same tag threads close).
+    // warning: not pin to specific core. if not required, just `return true;`.
     thread_affinity_policy_data_t policy = { (integer_t)((core_id % 16) + 1) };
     kern_return_t kr = thread_policy_set(
         mach_thread_self(),
@@ -109,19 +110,20 @@ static bool pin_to_core(int core_id) {
 #endif
 }
 
-// nice 값을 올려 스케줄 우선순위를 높임 (루트 아닐 때는 실패할 수 있음)
+// nice increase to boost scheduling priority (may fail if not root)
 static void try_bump_priority() {
-    // 음수 nice는 루트 필요. 실패해도 무시
+    // negative nice needs root.
+    // failure is ignored.
     setpriority(PRIO_PROCESS, 0, -5);
 }
 
-// 바쁜 루프: 부동소수(FMA) + 정수 LCG 혼합으로 연산 파이프를 지속 가동
+// busy loop: FMA-heavy floating point + LCG integer ops
 static void hot_loop(std::atomic<bool>& stop_flag, std::atomic<bool>& work_flag) {
-    // align으로 false sharing 완화
+    // false sharing mitigation by align
     alignas(64) volatile double v0 = 1.000001, v1 = 0.999999, v2 = 1.000003, v3 = 0.999997;
     uint32_t rng = 123456789u;
 
-    // 큰 청크로 연산하여 커널 진입/탈출 오버헤드 최소화
+    // overhead minimization by large chunk
     while (!stop_flag.load(std::memory_order_relaxed)) {
         if (!work_flag.load(std::memory_order_relaxed)) {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -130,20 +132,21 @@ static void hot_loop(std::atomic<bool>& stop_flag, std::atomic<bool>& work_flag)
         
         #pragma clang loop unroll(full)
         for (int i = 0; i < 1'000'000; ++i) {
-            // 부동소수 연산 (FMA 유도)
+            //FMA
             v0 = v0 * 1.0000001 + 0.9999999;
             v1 = v1 * 0.9999997 + 1.0000003;
             v2 = v2 * 1.0000002 + 0.9999998;
             v3 = v3 * 0.9999996 + 1.0000004;
 
-            // 정수 연산 (LCG)
+            //LCG
             rng = rng * 1664525u + 1013904223u;
 
-            // 값 범위 제한 (denorm/Inf 방지)
+            // value range control
             if (v0 > 1e30) v0 = 1.0;
             if (v1 < 1e-30) v1 = 1.0;
         }
-        // 컴파일러 최적화로 제거되지 않도록 멤바리어 유사 효과
+        // To make not be optimized out by compiler
+        // memory barrier-like effect
         asm volatile("" :: "r"(v0), "r"(v1), "r"(v2), "r"(v3), "r"(rng) : "memory");
     }
 }
@@ -268,7 +271,7 @@ int main(int argc, char** argv) {
         });
     }
 
-    // 메인에서 SIGINT 감시
+    // detect SIGINT or finish of duration
     while (!g_stop.load(std::memory_order_relaxed) &&
            !stop.load(std::memory_order_relaxed)) {
         std::this_thread::sleep_for(500ms);
