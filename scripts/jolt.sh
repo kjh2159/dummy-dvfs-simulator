@@ -5,7 +5,7 @@ su -c "echo 0 > /sys/devices/system/cpu/cpu3/online"
 
 ./build/bin/thermo_jolt \
     -t 5 \
-    -d 50 \
+    -d 30 \
     -p 0 \
     -o output \
     --cpu-clock $1 \
