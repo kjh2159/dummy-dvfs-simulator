@@ -280,7 +280,7 @@ int main(int argc, char** argv) {
 
     for (auto& t : ths) t.join();
 
-    std::cout << "thermo_jolt: done.\n";
+    std::cout << "thermo_jolt: done.\r\n";
 
     // done
     sigterm = true;
