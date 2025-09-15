@@ -234,7 +234,7 @@ int main(int argc, char** argv) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     
-    std::cout << "=== start ===\n";
+    std::cout << "=== start ===\r\n";
     std::thread phase_thread([&]{
         using namespace std::chrono_literals;
         while (!g_stop.load(std::memory_order_relaxed) &&
@@ -243,7 +243,7 @@ int main(int argc, char** argv) {
             // total duration: duration_sec + pulse_sec
             // warm-up phase (duration_sec)
             g_work.store(true, std::memory_order_relaxed);
-            std::cout << "[WARM-UP] " << duration_sec - pulse_sec << "s\n";
+            std::cout << "[WARM-UP] " << duration_sec - pulse_sec << "s\r\n";
             for (int s = 0; s < duration_sec - pulse_sec &&
                  !g_stop.load(std::memory_order_relaxed) &&
                  !stop.load(std::memory_order_relaxed); ++s) {
@@ -252,7 +252,7 @@ int main(int argc, char** argv) {
 
             // pulse phase (pulse_sec)
             g_work.store(false, std::memory_order_relaxed);
-            std::cout << "[PULSE] " << pulse_sec << "s\n";
+            std::cout << "[PULSE] " << pulse_sec << "s\r\n";
             for (int s = 0; s < pulse_sec &&
                  !g_stop.load(std::memory_order_relaxed) &&
                  !stop.load(std::memory_order_relaxed); ++s) {
