@@ -243,8 +243,8 @@ int main(int argc, char** argv) {
             // total duration: duration_sec + pulse_sec
             // warm-up phase (duration_sec)
             g_work.store(true, std::memory_order_relaxed);
-            std::cout << "[WARM-UP] " << duration_sec << "s\n";
-            for (int s = 0; s < duration_sec &&
+            std::cout << "[WARM-UP] " << duration_sec - pulse_sec << "s\n";
+            for (int s = 0; s < duration_sec - pulse_sec &&
                  !g_stop.load(std::memory_order_relaxed) &&
                  !stop.load(std::memory_order_relaxed); ++s) {
                 std::this_thread::sleep_for(1s);
