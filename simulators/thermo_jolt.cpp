@@ -209,7 +209,7 @@ int main(int argc, char** argv) {
 
     // stop process
     std::atomic<bool> stop = false;
-    const int total_duration = duration_sec + pulse_sec;
+    const int total_duration = duration_sec;
     if (duration_sec > 0) {
         std::thread([&stop, total_duration]{
             std::this_thread::sleep_for(std::chrono::seconds(total_duration));
@@ -237,27 +237,24 @@ int main(int argc, char** argv) {
     std::cout << "=== start ===\r\n";
     std::thread phase_thread([&]{
         using namespace std::chrono_literals;
-        while (!g_stop.load(std::memory_order_relaxed) &&
-               !stop.load(std::memory_order_relaxed)) {
+        
+        // total duration: duration_sec + pulse_sec
+        // warm-up phase (duration_sec)
+        g_work.store(true, std::memory_order_relaxed);
+        std::cout << "[WARM-UP] " << duration_sec - pulse_sec << "s\r\n";
+        for (int s = 0; s < 2*(duration_sec - pulse_sec) &&
+                !g_stop.load(std::memory_order_relaxed) &&
+                !stop.load(std::memory_order_relaxed); ++s) {
+            std::this_thread::sleep_for(500ms);
+        }
 
-            // total duration: duration_sec + pulse_sec
-            // warm-up phase (duration_sec)
-            g_work.store(true, std::memory_order_relaxed);
-            std::cout << "[WARM-UP] " << duration_sec - pulse_sec << "s\r\n";
-            for (int s = 0; s < duration_sec - pulse_sec &&
-                 !g_stop.load(std::memory_order_relaxed) &&
-                 !stop.load(std::memory_order_relaxed); ++s) {
-                std::this_thread::sleep_for(1s);
-            }
-
-            // pulse phase (pulse_sec)
-            g_work.store(false, std::memory_order_relaxed);
-            std::cout << "[PULSE] " << pulse_sec << "s\r\n";
-            for (int s = 0; s < pulse_sec &&
-                 !g_stop.load(std::memory_order_relaxed) &&
-                 !stop.load(std::memory_order_relaxed); ++s) {
-                std::this_thread::sleep_for(1s);
-            }
+        // pulse phase (pulse_sec)
+        g_work.store(false, std::memory_order_relaxed);
+        std::cout << "[PULSE] " << pulse_sec << "s\r\n";
+        for (int s = 0; s < 2*pulse_sec &&
+                !g_stop.load(std::memory_order_relaxed) &&
+                !stop.load(std::memory_order_relaxed); ++s) {
+            std::this_thread::sleep_for(500ms);
         }
     });
     
