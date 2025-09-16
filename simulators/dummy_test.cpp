@@ -229,7 +229,7 @@ int main(int argc, char **argv) {
     // output file join
     std::string output_hard = joinPaths(
         output_dir, 
-        std::string("kernel_hard") + std::to_string(cpu_clk_idx) + "_" + std::to_string(ram_clk_idx) + std::string(".txt")
+        std::string("kernel_hard_") + std::to_string(cpu_clk_idx) + "_" + std::to_string(ram_clk_idx) + std::string(".txt")
     );
 
     // DVFS setting
