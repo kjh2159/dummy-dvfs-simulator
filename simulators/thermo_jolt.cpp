@@ -207,16 +207,6 @@ int main(int argc, char** argv) {
 
     try_bump_priority();
 
-    // stop process
-    std::atomic<bool> stop = false;
-    const int total_duration = duration_sec;
-    if (duration_sec > 0) {
-        std::thread([&stop, total_duration]{
-            std::this_thread::sleep_for(std::chrono::seconds(total_duration));
-            stop.store(true, std::memory_order_relaxed);
-        }).detach();
-    }
-
     std::vector<std::thread> ths;
     ths.reserve(threads);
 
@@ -232,6 +222,23 @@ int main(int argc, char** argv) {
     // start recording
     std::thread record_thread = std::thread(record_hard, std::ref(sigterm), dvfs);
 
+    // stop process
+    std::atomic<bool> stop = false;
+    if (duration_sec > 0) {
+        std::thread([&stop, &dvfs, duration_sec, pulse_sec, pulse_cpu_clk_idx, pulse_ram_clk_idx]{
+            // warm-up
+            std::this_thread::sleep_for(std::chrono::seconds(duration_sec-pulse_sec));
+            std::vector<int> freq_config = dvfs.get_cpu_freqs_conf(pulse_cpu_clk_idx);
+            dvfs.set_cpu_freq(freq_config);
+            dvfs.set_ram_freq(pulse_ram_clk_idx);
+            std::cout << "dvfs set\r\n";
+            // pulse
+            std::this_thread::sleep_for(std::chrono::seconds(pulse_sec));
+            stop.store(true, std::memory_order_relaxed);
+        }).detach();
+    }
+
+    // stabilize
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     
     std::cout << "=== start ===\r\n";
