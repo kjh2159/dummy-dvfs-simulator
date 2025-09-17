@@ -201,25 +201,6 @@ int main(int argc, char** argv) {
         std::string("kernel_hard_") + std::to_string(cpu_clk_idx) + "_" + std::to_string(ram_clk_idx) + std::string(".txt")
     );
 
-    // option validation
-    for (int i = 1; i < argc; ++i) {
-        std::string a = argv[i];
-        if (a == "-t" && i+1 < argc) {
-            threads = std::max(1, atoi(argv[++i]));
-        } else if (a == "-nopin") {
-            pin = false;
-        } else if (a == "-d" && i+1 < argc) {
-            duration_sec = std::max(1, atoi(argv[++i]));
-        } else if (a == "-h" || a == "--help") {
-            std::cout <<
-            "Usage: " << argv[0] << " [-t N] [-nopin] [-d seconds]\n"
-            "  -t N       : number of threads (default: #online CPUs)\n"
-            "  -nopin     : do NOT pin threads to specific cores\n"
-            "  -d seconds : auto-stop after given seconds\n";
-            return 0;
-        }
-    }
-
     auto cpus = read_online_cpus();
     int online = cpus.empty() ? (int)std::thread::hardware_concurrency() : (int)cpus.size();
     if (online <= 0) online = 1;
