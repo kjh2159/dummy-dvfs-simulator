@@ -4,7 +4,8 @@
 
 This Dummy DVFS Simulator has two functionalities:
 1. CPU burner (`cpu_burner.cpp`)
-2. LLM-mimicry simulator (`dummy_test.cpp`)
+2. Thermo jolt (`thermo_jolt.cpp`)
+3. LLM-mimicry simulator (`dummy_test.cpp`)
 
 In the case of the CPU burner, it can lead to full utilization of the selected cores within a specified duration.
 However, in the case of the LLM-mimicry simulator can lead to high CPU and RAM utilization.
