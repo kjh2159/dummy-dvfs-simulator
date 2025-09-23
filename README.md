@@ -41,6 +41,12 @@ cmake --build build -j
 
 ## 🪐 Details
 
+### Abbreviation
+
+- `N`: A nature number.
+- `S`: A string (character sequence).
+
+
 ### 1. CPU Burner
 
 A program to alternate compute-intensive workload and idle time for the given duration.
@@ -50,7 +56,7 @@ A program to alternate compute-intensive workload and idle time for the given du
 - `-b N` or `--burst N`: The basis of the length for computational workload
 - `-p N` or `--pause N`: The basis of the length for idle time
 - `--device S`: The device name for execution (default: Pixel9)
-- `-o S` or `--output`: The directory path to save output
+- `-o S` or `--output S`: The directory path to save output
 - `-c N` or `--cpu-clock N`: The index number of cpu frequencies to set cpu clock
 - `-r N` or `--ram-clock N`: The index number of ram frequencies to set ram clock
 
@@ -62,7 +68,7 @@ A program to impose a sudden workload while maintaning CPU temerature.
 - `-d N` or `--duration N`: The length of duration to load
 - `-p N` or `--pulse N`: The basis of the length for pulse
 - `--device S`: The device name for execution (default: Pixel9)
-- `-o S` or `--output`: The directory path to save output
+- `-o S` or `--output S`: The directory path to save output
 - `--cpu-clock N`: The index number of cpu frequencies to set cpu clock for **temperature maintainence**
 - `--ram-clock N`: The index number of ram frequencies to set ram clock for **temperature maintainence**
 - `--pulse-cpu-clock N`: The index number of cpu frequencies to set cpu clock for **pulse**
