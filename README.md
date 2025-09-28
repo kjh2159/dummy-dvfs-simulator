@@ -34,6 +34,7 @@ mkdir -p build output
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
 ```
+> To debug or test, use `-DCMAKE_BUILD_TYPE=Debug` instead of `-DCMAKE_BUILD_TYPE=Release`.
 
 ### STEP 3: run
 ```shell
