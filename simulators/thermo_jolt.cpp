@@ -213,6 +213,9 @@ int main(int argc, char** argv) {
 
     // DVFS setting
     DVFS dvfs(device_name);
+    if (dvfs.init_fd_cache() != 0) {
+        fprintf(stderr, "FD cache initialization failed. Are you root or authorized?\n");
+    }
     dvfs.output_filename = output_hard;
     // cpu clock candidates
     std::vector<int> freq_config = dvfs.get_cpu_freqs_conf(cpu_clk_idx);
